@@ -23,7 +23,7 @@ wp_print_styles('morpos-receipt');
 
   <p class="morpos-meta">
     <span class="morpos-order">
-      <?php echo esc_html__('Order number:', 'woocommerce'); ?>
+      <?php echo esc_html__('Order number:', 'morpos-for-woocommerce'); ?>
       #<?php echo esc_html($order->get_order_number()); ?>
     </span>
   </p>

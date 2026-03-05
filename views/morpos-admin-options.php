@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
     <div class="header-left">
       <h2 class="morpos-h2"><?php echo esc_html($this->get_method_title()); ?></h2>
       <p class="morpos-desc"><?php echo esc_html($this->get_method_description()); ?></p>
-      <p class="morpos-version"><?php echo __('Version:', 'morpos-for-woocommerce') . ' ' . esc_html(MORPOS_GATEWAY_VERSION); ?>
+      <p class="morpos-version"><?php echo esc_html__('Version:', 'morpos-for-woocommerce') . ' ' . esc_html(MORPOS_GATEWAY_VERSION); ?>
       </p>
     </div>
     <div class="header-right">

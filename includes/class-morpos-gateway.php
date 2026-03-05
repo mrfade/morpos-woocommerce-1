@@ -88,7 +88,7 @@ class MorPOS_Gateway extends WC_Payment_Gateway
             return;
         }
 
-        $is_gateway_page = isset($_GET['tab'], $_GET['section']) && $_GET['tab'] === 'checkout' && $_GET['section'] === $this->id;
+        $is_gateway_page = isset($_GET['tab'], $_GET['section']) && sanitize_text_field($_GET['tab']) === 'checkout' && sanitize_text_field($_GET['section']) === $this->id;
         if (!$is_gateway_page) {
             return;
         }
@@ -234,6 +234,7 @@ class MorPOS_Gateway extends WC_Payment_Gateway
             // Connection failed
             if (!$ok) {
                 WC_Admin_Settings::add_error(
+                    /* translators: %s: error message */
                     sprintf(__('Connection failed: %s', 'morpos-for-woocommerce'), isset($err) ? esc_html($err) : __('Invalid credentials', 'morpos-for-woocommerce'))
                 );
             }
@@ -268,11 +269,15 @@ class MorPOS_Gateway extends WC_Payment_Gateway
 
         // Handle URL parameters from embedded payment callback
         if (isset($_GET['notice_type']) && isset($_GET['notice_message'])) {
-            $notice_type = sanitize_text_field($_GET['notice_type']);
-            $notice_message = sanitize_text_field(urldecode($_GET['notice_message']));
+            if (!isset($_GET['morpos_notice_nonce']) || !wp_verify_nonce(sanitize_text_field($_GET['morpos_notice_nonce']), 'morpos_receipt_notice')) {
+                // Invalid or missing nonce — skip notice processing
+            } else {
+                $notice_type = sanitize_text_field($_GET['notice_type']);
+                $notice_message = sanitize_text_field(urldecode($_GET['notice_message']));
 
-            $notice_type = $notice_type === 'success' ? 'success' : 'error';
-            morpos_add_notice_and_redirect(esc_html($notice_message), $notice_type, remove_query_arg(['notice_type', 'notice_message']));
+                $notice_type = $notice_type === 'success' ? 'success' : 'error';
+                morpos_add_notice_and_redirect(esc_html($notice_message), $notice_type, remove_query_arg(['notice_type', 'notice_message', 'morpos_notice_nonce']));
+            }
         }
 
         $payment = $this->create_payment($order_id);
@@ -433,21 +438,25 @@ class MorPOS_Gateway extends WC_Payment_Gateway
      */
     private function morpos_collect_return_params(): array
     {
-        $params = [];
+        $allowed_keys = [
+            'ResultCode', 'resultCode',
+            'Message', 'message',
+            'ConversationId', 'conversationId',
+            'PaymentId', 'paymentId',
+            'BankUniqueReferenceNumber', 'bankUniqueReferenceNumber',
+            'Amount', 'amount',
+            'Currency', 'currency',
+            'InstallmentCount', 'installmentCount',
+            'MaskedCardNumber', 'maskedCardNumber',
+            'order_id', 'order_key', 'form_type',
+        ];
 
-        foreach ($_REQUEST as $key => $val) {
-            if (is_array($val)) {
-                $params[$key] = [];
-                foreach ($val as $sub_k => $sub_v) {
-                    if (is_array($sub_v)) {
-                        continue;
-                    }
-                    $params[$key][$sub_k] = sanitize_text_field(wp_unslash((string) $sub_v));
-                }
+        $params = [];
+        foreach ($allowed_keys as $key) {
+            if (!isset($_REQUEST[$key])) {
                 continue;
             }
-
-            $params[$key] = sanitize_text_field(wp_unslash((string) $val));
+            $params[$key] = sanitize_text_field(wp_unslash((string) $_REQUEST[$key]));
         }
 
         return $params;
@@ -657,6 +666,7 @@ class MorPOS_Gateway extends WC_Payment_Gateway
         $redirectUrl = add_query_arg([
             'notice_type' => $noticeType,
             'notice_message' => urlencode($noticeMessage),
+            'morpos_notice_nonce' => wp_create_nonce('morpos_receipt_notice'),
         ], $redirectUrl);
 
         include MORPOS_GATEWAY_PATH . 'views/morpos-callback.php';
@@ -730,30 +740,30 @@ class MorPOS_Gateway extends WC_Payment_Gateway
         $rows = [
             [
                 'label' => __('PHP', 'morpos-for-woocommerce'),
-                'cur' => esc_html($current['php']),
-                'req' => esc_html($targets['php']['required'] . '+'),
-                'rec' => esc_html($targets['php']['recommended'] . '+'),
+                'cur' => $current['php'],
+                'req' => $targets['php']['required'] . '+',
+                'rec' => $targets['php']['recommended'] . '+',
                 'status' => $ver_status($current['php'], $targets['php']['required'], $targets['php']['recommended']),
             ],
             [
                 'label' => __('WordPress', 'morpos-for-woocommerce'),
-                'cur' => esc_html($current['wp']),
-                'req' => esc_html($targets['wp']['required'] . '+'),
-                'rec' => esc_html($targets['wp']['recommended'] . '+'),
+                'cur' => $current['wp'],
+                'req' => $targets['wp']['required'] . '+',
+                'rec' => $targets['wp']['recommended'] . '+',
                 'status' => $ver_status($current['wp'], $targets['wp']['required'], $targets['wp']['recommended']),
             ],
             [
                 'label' => __('WooCommerce', 'morpos-for-woocommerce'),
-                'cur' => esc_html($current['wc'] ?: __('Not installed', 'morpos-for-woocommerce')),
-                'req' => esc_html($targets['wc']['required'] . '+'),
-                'rec' => esc_html($targets['wc']['recommended'] . '+'),
+                'cur' => $current['wc'] ?: __('Not installed', 'morpos-for-woocommerce'),
+                'req' => $targets['wc']['required'] . '+',
+                'rec' => $targets['wc']['recommended'] . '+',
                 'status' => $ver_status($current['wc'], $targets['wc']['required'], $targets['wc']['recommended']),
             ],
             [
                 'label' => __('TLS', 'morpos-for-woocommerce'),
-                'cur' => esc_html($current['tls'] ? $current['tls']['label'] : __('Unknown', 'morpos-for-woocommerce')),
-                'req' => 'TLS ' . esc_html($targets['tls']['required']) . '+',
-                'rec' => 'TLS ' . esc_html($targets['tls']['recommended']) . '+',
+                'cur' => $current['tls'] ? $current['tls']['label'] : __('Unknown', 'morpos-for-woocommerce'),
+                'req' => 'TLS ' . $targets['tls']['required'] . '+',
+                'rec' => 'TLS ' . $targets['tls']['recommended'] . '+',
                 'status' => $tls_status($current['tls'], $targets['tls']['required'], $targets['tls']['recommended']),
             ],
         ];

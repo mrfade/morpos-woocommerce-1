@@ -19,9 +19,9 @@ if (!defined('ABSPATH')) {
       <?php foreach ($rows as $r): ?>
         <tr>
           <td><?php echo esc_html($r['label']); ?></td>
-          <td><?php echo $r['cur']; ?></td>
-          <td><?php echo $r['rec']; ?></td>
-          <td><?php echo $r['req']; ?></td>
+          <td><?php echo esc_html($r['cur']); ?></td>
+          <td><?php echo esc_html($r['rec']); ?></td>
+          <td><?php echo esc_html($r['req']); ?></td>
           <td>
             <span class="morpos-badge <?php echo esc_attr($r['status']['class']); ?>">
               <?php

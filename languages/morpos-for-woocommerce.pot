@@ -1,15 +1,15 @@
 # Copyright (C) 2026 Morpara
-# This file is distributed under the same license as the MorPOS for WooCommerce plugin.
+# This file is distributed under the GPLv3.
 msgid ""
 msgstr ""
-"Project-Id-Version: MorPOS for WooCommerce 1.0.1\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/morpos-gateway\n"
+"Project-Id-Version: MorPOS for WooCommerce 1.0.2\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/morpos-for-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-01-11T22:14:55+00:00\n"
+"POT-Creation-Date: 2026-03-05T11:19:22+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: morpos-for-woocommerce\n"
@@ -31,7 +31,7 @@ msgstr ""
 
 #. Author URI of the plugin
 #: morpos-gateway.php
-msgid "https://morpara.com/"
+msgid "https://github.com/morpara"
 msgstr ""
 
 #: includes/class-morpos-ajax.php:15
@@ -43,7 +43,7 @@ msgid "Please fill in all required fields."
 msgstr ""
 
 #: includes/class-morpos-ajax.php:49
-#: includes/class-morpos-gateway.php:245
+#: includes/class-morpos-gateway.php:246
 #: assets/js/morpos-settings.js:45
 msgid "Connection successful."
 msgstr ""
@@ -141,47 +141,45 @@ msgstr ""
 msgid "Embedded Payment"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:237
+#. translators: %s: error message
+#: includes/class-morpos-gateway.php:238
 #, php-format
 msgid "Connection failed: %s"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:237
+#. translators: %s: error message
+#: includes/class-morpos-gateway.php:238
 msgid "Invalid credentials"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:309
-#: includes/class-morpos-gateway.php:355
-#: includes/class-morpos-gateway.php:574
+#: includes/class-morpos-gateway.php:314
+#: includes/class-morpos-gateway.php:360
+#: includes/class-morpos-gateway.php:583
 msgid "Order not found."
 msgstr ""
 
-#: includes/class-morpos-gateway.php:332
+#: includes/class-morpos-gateway.php:337
 msgid "MorPOS: Hosted Payment initiated, customer redirected."
 msgstr ""
 
-#: includes/class-morpos-gateway.php:405
+#: includes/class-morpos-gateway.php:410
 msgid "An error occurred while initiating the payment. Please try again. If the problem persists, contact support."
 msgstr ""
 
-#: includes/class-morpos-gateway.php:416
+#: includes/class-morpos-gateway.php:421
 msgid "Embedded payment form could not be obtained. Please try again. If the problem persists, contact support."
 msgstr ""
 
-#: includes/class-morpos-gateway.php:425
+#: includes/class-morpos-gateway.php:430
 msgid "Payment redirect URL could not be obtained. Please try again. If the problem persists, contact support."
 msgstr ""
 
-#: includes/class-morpos-gateway.php:579
+#: includes/class-morpos-gateway.php:588
 msgid "Order key could not be verified."
 msgstr ""
 
-#: includes/class-morpos-gateway.php:597
-msgid "Conversation ID could not be verified."
-msgstr ""
-
 #: includes/class-morpos-gateway.php:606
-msgid "MorPOS return parameters:"
+msgid "Conversation ID could not be verified."
 msgstr ""
 
 #: includes/class-morpos-gateway.php:616
@@ -212,56 +210,56 @@ msgstr ""
 msgid "Payment failed"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:709
+#: includes/class-morpos-gateway.php:710
 msgid "Not detected"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:713
+#: includes/class-morpos-gateway.php:714
 msgid "Below required"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:717
+#: includes/class-morpos-gateway.php:718
 msgid "Allowed but discouraged"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:720
-#: includes/class-morpos-gateway.php:736
+#: includes/class-morpos-gateway.php:721
+#: includes/class-morpos-gateway.php:737
 msgid "Meets recommended"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:725
+#: includes/class-morpos-gateway.php:726
 msgid "Unable to verify TLS support"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:729
+#: includes/class-morpos-gateway.php:730
 msgid "Does not meet minimum TLS requirements"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:733
+#: includes/class-morpos-gateway.php:734
 msgid "Works, but TLS 1.3 is recommended"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:741
+#: includes/class-morpos-gateway.php:742
 msgid "PHP"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:748
+#: includes/class-morpos-gateway.php:749
 msgid "WordPress"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:755
+#: includes/class-morpos-gateway.php:756
 msgid "WooCommerce"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:756
+#: includes/class-morpos-gateway.php:757
 msgid "Not installed"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:762
+#: includes/class-morpos-gateway.php:763
 msgid "TLS"
 msgstr ""
 
-#: includes/class-morpos-gateway.php:763
+#: includes/class-morpos-gateway.php:764
 msgid "Unknown"
 msgstr ""
 
@@ -320,6 +318,10 @@ msgstr ""
 
 #: views/morpos-receipt.php:21
 msgid "We’ve received your order. Please complete the payment to finish your purchase."
+msgstr ""
+
+#: views/morpos-receipt.php:26
+msgid "Order number:"
 msgstr ""
 
 #: views/morpos-receipt.php:43
