@@ -1,9 +1,9 @@
 # MorPOS for WooCommerce
 
 [![WordPress Plugin Version](https://img.shields.io/badge/WordPress-6.0%2B-blue.svg)](https://wordpress.org/)
-[![WooCommerce](https://img.shields.io/badge/WooCommerce-7.0%2B-purple.svg)](https://woocommerce.com/)
+[![WooCommerce](https://img.shields.io/badge/WooCommerce-9.0%2B-purple.svg)](https://woocommerce.com/)
 [![PHP Version](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://php.net/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
 **MorPOS for WooCommerce** is a secure and easy-to-use payment gateway plugin that integrates the **Morpara MorPOS** payment system with WooCommerce stores. Customers are redirected through a secure **Hosted Payment Page (HPP)** flow when completing their orders.
 
@@ -27,7 +27,7 @@
 | Component | Minimum | Recommended |
 |-----------|---------|-------------|
 | **WordPress** | 6.0 | 6.8+ |
-| **WooCommerce** | 7.0 | 10.0+ |
+| **WooCommerce** | 9.0 | 10.0+ |
 | **PHP** | 7.4 | 8.2+ |
 | **TLS** | 1.2 | 1.3 |
 
@@ -220,7 +220,7 @@ For detailed installation instructions, visit: [WP-CLI Installation Guide](https
 
 1. Generate POT file:
    ```bash
-   wp i18n make-pot . languages/morpos.pot --domain=morpos --include=includes,assets,views
+   wp i18n make-pot . languages/morpos-for-woocommerce.pot --domain=morpos-for-woocommerce --include=includes,assets,views
    ```
 
 2. Create JSON translation files:
@@ -267,7 +267,7 @@ We welcome contributions! Here's how to get started:
 
 ## 📄 License
 
-This project is licensed under the **MIT** License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GPLv3** License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 

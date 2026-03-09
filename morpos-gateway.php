@@ -3,24 +3,26 @@
  * Plugin Name: MorPOS for WooCommerce
  * Description: MorPOS is a secure and easy-to-use payment gateway for WooCommerce, enabling businesses to accept credit and debit card payments online with ease.
  * Author: Morpara
- * Author URI: https://morpara.com/
- * Version: 1.0.1
+ * Author URI: https://github.com/morpara
+ * Version: 1.0.2
  * Requires Plugins: woocommerce
  * Requires at least: 6.0
- * Tested up to: 6.8.3
+ * Tested up to: 6.9
  * Requires PHP: 7.4
  * PHP tested up to: 8.4
  * WC requires at least: 8.0
  * WC tested up to: 10.1
  * Text Domain: morpos-for-woocommerce
  * Domain Path: /languages
+ * License: GPLv3
+ * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MORPOS_GATEWAY_VERSION', '1.0.1');
+define('MORPOS_GATEWAY_VERSION', '1.0.2');
 define('MORPOS_GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('MORPOS_GATEWAY_URL', plugin_dir_url(__FILE__));
 define('MORPOS_CONVERSATION_KEY', AUTH_SALT . '|' . SECURE_AUTH_SALT . '|morpos:v1');
@@ -122,13 +124,6 @@ class MorPOS_Loader
         if (!class_exists('WC_Payment_Gateway')) {
             add_action('admin_notices', array(__CLASS__, 'morpos_wc_missing_notice'));
         }
-
-        // Load text domain for translations
-        load_plugin_textdomain(
-            'morpos-for-woocommerce',
-            false,
-            dirname(plugin_basename(__FILE__)) . '/languages'
-        );
     }
 
     /**
@@ -136,7 +131,7 @@ class MorPOS_Loader
      */
     public function morpos_wc_missing_notice()
     {
-        echo '<div class="notice notice-error"><p><strong>MorPOS:</strong> Bu eklenti WooCommerce gerektirir. Lütfen WooCommerce’i yükleyip etkinleştirin.</p></div>';
+        echo '<div class="notice notice-error"><p><strong>MorPOS:</strong> ' . esc_html__('This plugin requires WooCommerce. Please install and activate WooCommerce.', 'morpos-for-woocommerce') . '</p></div>';
     }
 
     /**

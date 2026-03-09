@@ -1,9 +1,9 @@
 # WooCommerce için MorPOS
 
 [![WordPress Plugin Version](https://img.shields.io/badge/WordPress-6.0%2B-blue.svg)](https://wordpress.org/)
-[![WooCommerce](https://img.shields.io/badge/WooCommerce-7.0%2B-purple.svg)](https://woocommerce.com/)
+[![WooCommerce](https://img.shields.io/badge/WooCommerce-9.0%2B-purple.svg)](https://woocommerce.com/)
 [![PHP Version](https://img.shields.io/badge/PHP-7.4%2B-777bb4.svg)](https://php.net/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)](LICENSE)
 
 **WooCommerce için MorPOS**, **Morpara MorPOS** ödeme sistemini WooCommerce mağazalarıyla entegre eden güvenli ve kullanımı kolay bir ödeme geçidi eklentisidir. Müşteriler siparişlerini tamamlarken güvenli **Hosted Payment Page (HPP)** akışıyla yönlendirilir.
 
@@ -27,7 +27,7 @@
 | Bileşen | Minimum | Önerilen |
 |---------|---------|----------|
 | **WordPress** | 6.0 | 6.8+ |
-| **WooCommerce** | 7.0 | 10.0+ |
+| **WooCommerce** | 9.0 | 10.0+ |
 | **PHP** | 7.4 | 8.2+ |
 | **TLS** | 1.2 | 1.3 |
 
@@ -267,7 +267,7 @@ Katkılarınızı bekliyoruz! Başlamak için:
 
 ## 📄 Lisans
 
-Bu proje **MIT** Lisansı altında lisanslanmıştır - detaylar için [LICENSE](LICENSE) dosyasına bakın.
+Bu proje **GPLv3** Lisansı altında lisanslanmıştır - detaylar için [LICENSE](LICENSE) dosyasına bakın.
 
 ## 🆘 Destek
 

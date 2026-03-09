@@ -35,7 +35,7 @@ class MorPOS_Ajax
             $credentials['merchant_id'],
             '',
             $credentials['api_key'],
-            ($_POST['testmode'] ?? '') === 'yes' ? 'sandbox' : 'production',
+            sanitize_text_field($_POST['testmode'] ?? '') === 'yes' ? 'sandbox' : 'production',
         );
 
         $result = $api->make_test_connection();
