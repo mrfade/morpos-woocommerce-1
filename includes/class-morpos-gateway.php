@@ -233,6 +233,9 @@ class MorPOS_Gateway extends WC_Payment_Gateway
 
             // Connection failed
             if (!$ok) {
+                MorPOS_Logger::warning('Settings: connection test failed on save', [
+                    'error' => isset($err) ? $err : 'invalid credentials',
+                ]);
                 WC_Admin_Settings::add_error(
                     /* translators: %s: error message */
                     sprintf(__('Connection failed: %s', 'morpos-for-woocommerce'), isset($err) ? esc_html($err) : __('Invalid credentials', 'morpos-for-woocommerce'))
@@ -246,10 +249,13 @@ class MorPOS_Gateway extends WC_Payment_Gateway
             WC_Admin_Settings::add_message(__('Connection successful.', 'morpos-for-woocommerce'));
         }
 
-        // Update connection status
-        $settings = get_option('woocommerce_' . $this->id . '_settings', []);
-        $settings['connection_status'] = $ok ? 'ok' : 'fail';
-        update_option('woocommerce_' . $this->id . '_settings', $settings);
+        // Update connection status only when a connection test was actually performed.
+        // Uses the in-memory settings array (just refreshed by parent::process_admin_options)
+        // instead of a raw get_option/update_option round-trip, so a stale object-cached
+        // option value can never overwrite freshly saved credentials.
+        if ('yes' === $enabled) {
+            $this->update_option('connection_status', $ok ? 'ok' : 'fail');
+        }
 
         return $saved;
     }
@@ -357,7 +363,22 @@ class MorPOS_Gateway extends WC_Payment_Gateway
     {
         $order = wc_get_order($order_id);
         if (!$order) {
+            MorPOS_Logger::error('CreatePayment: order not found', ['order_id' => $order_id]);
             return ['error' => __('Order not found.', 'morpos-for-woocommerce')];
+        }
+
+        // Diagnostic: log which credentials are missing (values are never logged)
+        $missing = array_keys(array_filter([
+            'merchant_id' => $this->merchant_id === '',
+            'client_id' => $this->client_id === '',
+            'client_secret' => $this->client_secret === '',
+            'api_key' => $this->api_key === '',
+        ]));
+        if (!empty($missing)) {
+            MorPOS_Logger::error('CreatePayment: gateway settings incomplete, please re-save the MorPOS settings', [
+                'order_id' => $order_id,
+                'missing' => implode(',', $missing),
+            ]);
         }
 
         // Generate new unique conversation ID for this attempt
@@ -406,7 +427,10 @@ class MorPOS_Gateway extends WC_Payment_Gateway
         ]);
 
         if (!$payment['ok']) {
-            MorPOS_Logger::log('Payment initiation failed: ' . ($payment['error'] ?? ('HTTP ' . $payment['http'] ?? 'Unknown error')));
+            MorPOS_Logger::error('CreatePayment: payment initiation failed', [
+                'order_id' => $order_id,
+                'error' => $payment['error'] ?? ('HTTP ' . ($payment['http'] ?? 'unknown')),
+            ]);
             return ['error' => $payment['message'] ?? __('An error occurred while initiating the payment. Please try again. If the problem persists, contact support.', 'morpos-for-woocommerce')];
         }
 
@@ -417,7 +441,10 @@ class MorPOS_Gateway extends WC_Payment_Gateway
         // Embedded flow – requires the form
         if ($this->form_type === self::FORM_TYPE_EMBEDDED) {
             if (!$payment_form) {
-                MorPOS_Logger::log('Embedded payment form not found in API response.' . var_export($data, true));
+                MorPOS_Logger::error('CreatePayment: embedded payment form missing in API response', [
+                    'order_id' => $order_id,
+                    'response' => $data,
+                ]);
                 return ['error' => __('Embedded payment form could not be obtained. Please try again. If the problem persists, contact support.', 'morpos-for-woocommerce')];
             }
 
@@ -426,7 +453,10 @@ class MorPOS_Gateway extends WC_Payment_Gateway
 
         // Hosted flow – requires redirect URL
         if (!$redirect_url) {
-            MorPOS_Logger::log('Payment redirect URL could not be obtained from API response.' . var_export($data, true));
+            MorPOS_Logger::error('CreatePayment: redirect URL missing in API response', [
+                'order_id' => $order_id,
+                'response' => $data,
+            ]);
             return ['error' => __('Payment redirect URL could not be obtained. Please try again. If the problem persists, contact support.', 'morpos-for-woocommerce')];
         }
 
@@ -498,6 +528,10 @@ class MorPOS_Gateway extends WC_Payment_Gateway
 
         // Check result code and message
         if ($resultCode !== 'B0000' || $message !== 'Approved') {
+            MorPOS_Logger::info('Callback: result not approved', [
+                'result_code' => $resultCode,
+                'message' => $message,
+            ]);
             return false;
         }
 
@@ -553,6 +587,10 @@ class MorPOS_Gateway extends WC_Payment_Gateway
         ]);
 
         if (!$checkResult['ok']) {
+            MorPOS_Logger::error('CheckPayment: verification call failed', [
+                'conversation_id' => $conversationId,
+                'error' => $checkResult['error'] ?? ('HTTP ' . ($checkResult['http'] ?? 'unknown')),
+            ]);
             return false;
         }
 
@@ -561,6 +599,12 @@ class MorPOS_Gateway extends WC_Payment_Gateway
         $checkResponseDescription = morpos_array_get($checkData, 'responseDescription');
 
         if ($checkResponseCode !== 'B0000' || $checkResponseDescription !== 'Approved') {
+            // Callback claimed success but the server-side check did not confirm it
+            MorPOS_Logger::warning('CheckPayment: verification rejected', [
+                'conversation_id' => $conversationId,
+                'response_code' => $checkResponseCode,
+                'description' => $checkResponseDescription,
+            ]);
             return false;
         }
 
@@ -576,15 +620,22 @@ class MorPOS_Gateway extends WC_Payment_Gateway
         $order_key = sanitize_text_field($_REQUEST['order_key'] ?? '');
         $form_type = sanitize_text_field($_REQUEST['form_type'] ?? '');
 
+        MorPOS_Logger::info('Callback: received', [
+            'order_id' => $order_id,
+            'form_type' => $form_type,
+        ]);
+
         $order = wc_get_order($order_id);
 
         // Redirect if order not found
         if (!$order) {
+            MorPOS_Logger::warning('Callback: rejected, order not found', ['order_id' => $order_id]);
             morpos_add_notice_and_redirect(__('Order not found.', 'morpos-for-woocommerce'), 'error', wc_get_checkout_url());
         }
 
         // Redirect if order key mismatch
         if ($order_key && $order->get_order_key() !== $order_key) {
+            MorPOS_Logger::warning('Callback: rejected, order key mismatch', ['order_id' => $order_id]);
             morpos_add_notice_and_redirect(__('Order key could not be verified.', 'morpos-for-woocommerce'), 'error', wc_get_checkout_url());
         }
 
@@ -603,6 +654,10 @@ class MorPOS_Gateway extends WC_Payment_Gateway
 
         // Verify conversation ID
         if (!morpos_validate_conversation_id20_any($order, $conversationId)) {
+            MorPOS_Logger::warning('Callback: rejected, conversation ID could not be verified', [
+                'order_id' => $order_id,
+                'conversation_id' => $conversationId,
+            ]);
             morpos_add_notice_and_redirect(__('Conversation ID could not be verified.', 'morpos-for-woocommerce'), 'error', wc_get_checkout_url());
         }
 
@@ -640,6 +695,11 @@ class MorPOS_Gateway extends WC_Payment_Gateway
             $transaction_id = $paymentId ?: ($bankRef ?: '');
             $order->payment_complete($transaction_id);
 
+            MorPOS_Logger::info('Callback: payment completed', [
+                'order_id' => $order_id,
+                'payment_id' => $transaction_id,
+            ]);
+
             $order->add_order_note(__('MorPOS: Payment SUCCESSFUL.', 'morpos-for-woocommerce') . "\n" . $short);
             $order->save();
 
@@ -647,6 +707,12 @@ class MorPOS_Gateway extends WC_Payment_Gateway
             $noticeType = 'success';
             $redirectUrl = $this->get_return_url($order);
         } else {
+            MorPOS_Logger::warning('Callback: payment failed', [
+                'order_id' => $order_id,
+                'result_code' => $resultCode,
+                'message' => $message,
+            ]);
+
             $order->update_status('failed', __('MorPOS: Payment FAILED.', 'morpos-for-woocommerce') . "\n" . $short);
             $order->save();
 

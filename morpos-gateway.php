@@ -4,7 +4,7 @@
  * Description: MorPOS is a secure and easy-to-use payment gateway for WooCommerce, enabling businesses to accept credit and debit card payments online with ease.
  * Author: Morpara
  * Author URI: https://github.com/morpara
- * Version: 1.0.2
+ * Version: 1.0.3
  * Requires Plugins: woocommerce
  * Requires at least: 6.0
  * Tested up to: 6.9
@@ -22,7 +22,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('MORPOS_GATEWAY_VERSION', '1.0.2');
+define('MORPOS_GATEWAY_VERSION', '1.0.3');
 define('MORPOS_GATEWAY_PATH', plugin_dir_path(__FILE__));
 define('MORPOS_GATEWAY_URL', plugin_dir_url(__FILE__));
 define('MORPOS_CONVERSATION_KEY', AUTH_SALT . '|' . SECURE_AUTH_SALT . '|morpos:v1');

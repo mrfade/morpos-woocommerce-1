@@ -41,15 +41,18 @@ class MorPOS_Ajax
         $result = $api->make_test_connection();
         $ok = $result['ok'] === true && isset($result['data']) && isset($result['data']['responseCode']) && $result['data']['responseCode'] === 'B0000';
 
-        $settings = get_option('woocommerce_morpos_settings', []);
-        $settings['connection_status'] = $ok ? 'ok' : 'fail';
-        update_option('woocommerce_morpos_settings', $settings);
+        // NOTE: Intentionally NOT persisted to the settings option here.
+        // Rewriting the whole option from a separate AJAX request can clobber
+        // freshly saved credentials when a stale (object-cached) value is read back.
+        // The status is persisted on settings save (process_admin_options) instead.
 
         if ($ok) {
+            MorPOS_Logger::info('TestConnection: successful');
             wp_send_json_success(['status' => 'ok', 'message' => __('Connection successful.', 'morpos-for-woocommerce')]);
         }
 
         $errMsg = $result['error'] ?? ('HTTP ' . $result['http'] ?? 'Unknown error');
+        MorPOS_Logger::warning('TestConnection: failed', ['error' => $errMsg]);
         wp_send_json_error(['status' => 'fail', 'message' => __('Connection failed.', 'morpos-for-woocommerce') . ' ' . $errMsg]);
     }
 }

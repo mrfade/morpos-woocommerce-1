@@ -52,6 +52,7 @@ class MorPOS_API_Client
     public function create_payment(array $args): array
     {
         if ($this->api_key === '') {
+            MorPOS_Logger::error('CreatePayment: blocked, API key is empty in gateway settings');
             return $this->errorResult(__('API Key not found.', 'morpos-for-woocommerce'));
         }
 
@@ -121,11 +122,13 @@ class MorPOS_API_Client
     public function check_payment(array $args = []): array
     {
         if ($this->api_key === '') {
+            MorPOS_Logger::error('CheckPayment: blocked, API key is empty in gateway settings');
             return $this->errorResult(__('API Key not found.', 'morpos-for-woocommerce'));
         }
 
         $conversationId = $args['conversationId'];
         if (!$conversationId) {
+            MorPOS_Logger::error('CheckPayment: blocked, conversation ID is missing');
             return $this->errorResult(__('Conversation ID is required.', 'morpos-for-woocommerce'));
         }
 
@@ -153,6 +156,7 @@ class MorPOS_API_Client
     public function make_test_connection(array $args = []): array
     {
         if ($this->api_key === '') {
+            MorPOS_Logger::error('TestConnection: blocked, API key is empty');
             return $this->errorResult(__('API Key not found.', 'morpos-for-woocommerce'));
         }
 
@@ -201,11 +205,19 @@ class MorPOS_API_Client
             'sslverify' => $this->environment !== 'sandbox',
         ];
 
-        MorPOS_Logger::log($logPrefix . 'Request: ' . $httpArgs['body']);
+        MorPOS_Logger::debug($logPrefix . ': request sent', [
+            'endpoint' => $endpoint,
+            'body' => $httpArgs['body'],
+        ]);
 
         $response = wp_remote_post($endpoint, $httpArgs);
 
         if (is_wp_error($response)) {
+            // Network-level failure: timeout, SSL/TLS handshake, DNS resolution, blocked outbound connection, etc.
+            MorPOS_Logger::error($logPrefix . ': HTTP request failed', [
+                'endpoint' => $endpoint,
+                'error' => $response->get_error_message(),
+            ]);
             return [
                 'ok' => false,
                 'error' => $response->get_error_message(),
@@ -217,13 +229,21 @@ class MorPOS_API_Client
         $code = wp_remote_retrieve_response_code($response);
         $body = wp_remote_retrieve_body($response);
 
-        MorPOS_Logger::log(sprintf('%sResponse (%d): %s', $logPrefix, $code, $body));
+        MorPOS_Logger::debug($logPrefix . ': response received', [
+            'http' => $code,
+            'body' => $body,
+        ]);
 
         $data = $this->json_decode_assoc($body);
 
         if ($this->is_http_success($code) && is_array($data)) {
             return ['ok' => true, 'http' => $code, 'data' => $data];
         }
+
+        MorPOS_Logger::error($logPrefix . ': request rejected', [
+            'http' => $code,
+            'body' => $body,
+        ]);
 
         return [
             'ok' => false,

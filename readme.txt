@@ -3,7 +3,7 @@ Contributors: morpara
 Tags: payment, woocommerce, credit card, payment gateway, morpos
 Requires at least: 6.0
 Tested up to: 6.9
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 Requires PHP: 7.4
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -106,6 +106,14 @@ The plugin communicates with the MorPOS API in the following scenarios:
 
 == Changelog ==
 
+= 1.0.3 =
+* Fix: "Test Connection" button no longer rewrites the gateway settings option, preventing saved credentials from being unintentionally cleared on sites using a persistent object cache (Redis, Memcached, LiteSpeed)
+* Fix: Connection status is now only updated when a connection test is actually performed during settings save
+* Improvement: Logging now uses the WooCommerce logger (WooCommerce → Status → Logs, source "morpos") and no longer requires WP_DEBUG
+* Improvement: Added detailed logging for payment callbacks, server-side payment verification, network/API errors, and missing credential diagnostics
+* Improvement: All log entries now follow a consistent, grep-friendly format
+* Security: Sensitive values (API key, client secret, request signatures) are automatically redacted from all log output
+
 = 1.0.2 =
 * Security: Added nonce verification for receipt notice redirects
 * Security: Switched to allowlist-based parameter collection for payment return data
@@ -126,6 +134,9 @@ The plugin communicates with the MorPOS API in the following scenarios:
 * Initial release
 
 == Upgrade Notice ==
+
+= 1.0.3 =
+Fixes a rare issue where saved credentials could be cleared by the "Test Connection" button on sites with persistent object caching, and improves logging via the WooCommerce logger.
 
 = 1.0.2 =
 Security improvements: nonce verification, allowlist-based parameter handling, and input sanitization.
