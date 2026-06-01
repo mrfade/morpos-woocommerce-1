@@ -72,6 +72,52 @@ class MorPOS_Gateway extends WC_Payment_Gateway
     }
 
     /**
+     * List which required credentials are missing (values are never returned).
+     *
+     * @return array Field names that are empty.
+     */
+    private function get_missing_credentials(): array
+    {
+        return array_keys(array_filter([
+            'merchant_id' => $this->merchant_id === '',
+            'client_id' => $this->client_id === '',
+            'client_secret' => $this->client_secret === '',
+            'api_key' => $this->api_key === '',
+        ]));
+    }
+
+    /**
+     * Check if the gateway is available for use at checkout.
+     *
+     * Hides the gateway when required credentials are missing, so customers
+     * never reach a payment attempt that is guaranteed to fail.
+     *
+     * @return bool
+     */
+    public function is_available()
+    {
+        if (!parent::is_available()) {
+            return false;
+        }
+
+        $missing = $this->get_missing_credentials();
+        if (!empty($missing)) {
+            // Log once per request — is_available() is called multiple times per page load
+            static $logged = false;
+            if (!$logged) {
+                $logged = true;
+                MorPOS_Logger::warning('Gateway: hidden at checkout, required settings are missing', [
+                    'missing' => implode(',', $missing),
+                ]);
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Admin options page
      */
     public function admin_options()
@@ -368,12 +414,7 @@ class MorPOS_Gateway extends WC_Payment_Gateway
         }
 
         // Diagnostic: log which credentials are missing (values are never logged)
-        $missing = array_keys(array_filter([
-            'merchant_id' => $this->merchant_id === '',
-            'client_id' => $this->client_id === '',
-            'client_secret' => $this->client_secret === '',
-            'api_key' => $this->api_key === '',
-        ]));
+        $missing = $this->get_missing_credentials();
         if (!empty($missing)) {
             MorPOS_Logger::error('CreatePayment: gateway settings incomplete, please re-save the MorPOS settings', [
                 'order_id' => $order_id,

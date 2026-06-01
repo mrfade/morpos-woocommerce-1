@@ -71,6 +71,13 @@ class MorPOS_Payment_Method extends AbstractPaymentMethodType
             return false;
         }
 
+        // Hide when required credentials are missing — payment would be guaranteed to fail
+        foreach (['merchant_id', 'client_id', 'client_secret', 'api_key'] as $key) {
+            if (empty($this->settings[$key])) {
+                return false;
+            }
+        }
+
         return true;
     }
 

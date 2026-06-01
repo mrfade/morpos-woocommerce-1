@@ -108,6 +108,7 @@ The plugin communicates with the MorPOS API in the following scenarios:
 
 = 1.0.3 =
 * Fix: "Test Connection" button no longer rewrites the gateway settings option, preventing saved credentials from being unintentionally cleared on sites using a persistent object cache (Redis, Memcached, LiteSpeed)
+* Fix: The gateway is now hidden at checkout when required credentials are missing, instead of failing with an error after the customer selects it
 * Fix: Connection status is now only updated when a connection test is actually performed during settings save
 * Improvement: Logging now uses the WooCommerce logger (WooCommerce → Status → Logs, source "morpos") and no longer requires WP_DEBUG
 * Improvement: Added detailed logging for payment callbacks, server-side payment verification, network/API errors, and missing credential diagnostics
