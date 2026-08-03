@@ -413,13 +413,15 @@ class MorPOS_Gateway extends WC_Payment_Gateway
             return ['error' => __('Order not found.', 'morpos-for-woocommerce')];
         }
 
-        // Diagnostic: log which credentials are missing (values are never logged)
+        // Block the attempt when credentials are incomplete, logging which ones are missing (values are never logged)
         $missing = $this->get_missing_credentials();
         if (!empty($missing)) {
             MorPOS_Logger::error('CreatePayment: gateway settings incomplete, please re-save the MorPOS settings', [
                 'order_id' => $order_id,
                 'missing' => implode(',', $missing),
             ]);
+            // The API would reject the request anyway; fail fast with a single clear error.
+            return ['error' => __('An error occurred while initiating the payment. Please try again. If the problem persists, contact support.', 'morpos-for-woocommerce')];
         }
 
         // Generate new unique conversation ID for this attempt

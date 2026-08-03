@@ -152,21 +152,29 @@ class MorPOS_Logger
     }
 
     /**
-     * Redact sensitive JSON fields inside a string, e.g. request/response bodies:
-     *   {"sign":"ABC...","merchantId":"123"} → {"sign":"***","merchantId":"123"}
+     * Redact sensitive fields embedded inside a string.
+     *
+     * Covers two formats only: JSON pairs ({"sign":"ABC..."} → {"sign":"***"})
+     * and bare key=value pairs as found in query strings or form bodies
+     * (api_key=ABC → api_key=***). Values logged in any other format are NOT
+     * caught here and must be filtered through is_sensitive_key() before they
+     * reach a log line.
      *
      * @param string $text
      * @return string
      */
     private static function redact_string(string $text): string
     {
-        static $pattern = null;
-        if ($pattern === null) {
+        static $jsonPattern = null;
+        static $pairPattern = null;
+        if ($jsonPattern === null) {
             // sign, api_key/apiKey, client_secret/clientSecret, X-ClientSecret, password, authorization, card data
             $fields = 'sign|api[_-]?key|(?:x-?)?client[_-]?secret|password|authorization|pan|card[_-]?number|cvv|cvc';
-            $pattern = '/"(' . $fields . ')"(\s*:\s*)"(?:[^"\\\\]|\\\\.)*"/i';
+            $jsonPattern = '/"(' . $fields . ')"(\s*:\s*)"(?:[^"\\\\]|\\\\.)*"/i';
+            $pairPattern = '/\b(' . $fields . ')(=)[^&\s"\']+/i';
         }
 
-        return (string) preg_replace($pattern, '"$1"$2"' . self::MASK . '"', $text);
+        $text = (string) preg_replace($jsonPattern, '"$1"$2"' . self::MASK . '"', $text);
+        return (string) preg_replace($pairPattern, '$1$2' . self::MASK, $text);
     }
 }

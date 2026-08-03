@@ -51,7 +51,7 @@ class MorPOS_Ajax
             wp_send_json_success(['status' => 'ok', 'message' => __('Connection successful.', 'morpos-for-woocommerce')]);
         }
 
-        $errMsg = $result['error'] ?? ('HTTP ' . $result['http'] ?? 'Unknown error');
+        $errMsg = $result['error'] ?? ('HTTP ' . ($result['http'] ?? 'unknown'));
         MorPOS_Logger::warning('TestConnection: failed', ['error' => $errMsg]);
         wp_send_json_error(['status' => 'fail', 'message' => __('Connection failed.', 'morpos-for-woocommerce') . ' ' . $errMsg]);
     }
